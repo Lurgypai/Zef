@@ -17,6 +17,9 @@ import "player"
 local cam = fez.camera.new(0, 0, 0, 0)
 local offsetX = 0
 
+local texture = fez.texture.new("images/tiles/basic/basic")
+local textCuboid = fez.cuboid.new(-304, -96, 0, 64, 96, 32)
+
 function playdate.update()
     -- update player
     player:update()
@@ -31,6 +34,7 @@ function playdate.update()
     --draw world
     playdate.graphics.setDrawOffset(0, 0)
     world:draw(cam)
+    fez.drawCuboidTextured(textCuboid, texture, cam)
 
     --draw player
     if not player.isFrozen then
@@ -45,6 +49,7 @@ function playdate.update()
         if player.animState.flipped then flip = playdate.graphics.kImageFlippedX end
         player:getImage():draw(200-32, 120-64, flip)
     end
+
 end
 
 --[[

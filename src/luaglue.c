@@ -15,6 +15,7 @@ static void* getObj(int n, char* type)
 
 static Camera* getCamera(int n) { return getObj(n, "fez.camera"); }
 static Cuboid* getCuboid(int n) { return getObj(n, "fez.cuboid"); }
+static Texture* getTexture(int n) { return getObj(n, "fez.texture"); }
 
 static int camera_gc(lua_State* state) {
 	Camera* cam = getCamera(1);
@@ -187,6 +188,39 @@ static int fez_drawCuboid(lua_State* state) {
 	return 0;
 }
 
+static int fez_drawCuboidTextured(lua_State* state) {
+	Cuboid* cuboid = getCuboid(1);
+	Texture* texture = getTexture(2);
+	Camera* camera = getCamera(3);
+
+	DrawCuboidTextured(pd, cuboid, texture, camera);
+	return 0;
+}
+
+static int texture_gc(lua_State* state) {
+	Texture* texture = getTexture(1);
+	DeleteTexture(pd, texture);
+
+	return 0;
+}
+
+static int texture_new(lua_State* state) {
+	char* path = pd->lua->getArgString(1);
+	Texture* texture = LoadTexture(pd, path);
+
+	if (!texture) pd->lua->pushNil();
+	else pd->lua->pushObject(texture, "fez.texture", 0);
+
+	return 1;
+}
+
+static const lua_reg textureLib[] =
+{
+	{ "__gc",				texture_gc},
+	{ "new",				texture_new },
+	{NULL, NULL}
+};
+
 void RegisterLua(PlaydateAPI* pd_) {
 	pd = pd_;
 	pd->system->logToConsole("Registering Fez API...");
@@ -196,11 +230,19 @@ void RegisterLua(PlaydateAPI* pd_) {
 		pd->system->logToConsole("%s:%i: addFunction failed, %s", __FILE__, __LINE__, err);
 	}
 
+	if (!pd->lua->addFunction(fez_drawCuboidTextured, "fez.drawCuboidTextured", &err)) {
+		pd->system->logToConsole("%s:%i: addFunction failed, %s", __FILE__, __LINE__, err);
+	}
+
 	if (!pd->lua->registerClass("fez.camera", cameraLib, NULL, 0, &err)) {
 		pd->system->logToConsole("%s:%i: registerClass failed, %s", __FILE__, __LINE__, err);
 	}
 
 	if (!pd->lua->registerClass("fez.cuboid", cuboidLib, NULL, 0, &err)) {
+		pd->system->logToConsole("%s:%i: registerClass failed, %s", __FILE__, __LINE__, err);
+	}
+
+	if (!pd->lua->registerClass("fez.texture", textureLib, NULL, 0, &err)) {
 		pd->system->logToConsole("%s:%i: registerClass failed, %s", __FILE__, __LINE__, err);
 	}
 }

@@ -118,6 +118,68 @@ void DrawCuboid(PlaydateAPI* pd, Cuboid* cuboid, Camera* cam) {
 	}
 }
 
+void DrawCuboidTextured(PlaydateAPI* pd, Cuboid* cuboid, Texture* texture, Camera* cam)
+{
+	float x = cuboid->x;
+	float y = cuboid->y;
+	float z = cuboid->z;
+
+	Face f = {
+		.x = x,
+		.y = y,
+		.z = z,
+		.width = TEXTURE_WIDTH,
+		.height = TEXTURE_WIDTH,
+		.depth = 0,
+	};
+	// front
+	for (int i = 0; i != cuboid->width / TEXTURE_WIDTH; ++i) {
+		f.x = x + i * TEXTURE_WIDTH;
+		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
+			f.y = y + j * TEXTURE_WIDTH;
+			DrawFaceTextured(pd, &f, texture, cam);
+		}
+	}
+	
+
+	// left
+	f.x = x + cuboid->width;
+	f.width = 0;
+	f.depth = TEXTURE_WIDTH;
+	for (int i = 0; i != cuboid->width / TEXTURE_WIDTH; ++i) {
+		f.z = z + i * TEXTURE_WIDTH;
+		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
+			f.y = y + j * TEXTURE_WIDTH;
+			DrawFaceTextured(pd, &f, texture, cam);
+		}
+	}
+
+	// back
+	f.z = z + cuboid->depth;
+	f.depth = 0;
+	f.width = -TEXTURE_WIDTH;
+	for (int i = 0; i != cuboid->width / TEXTURE_WIDTH; ++i) {
+		f.x = x + cuboid->width - i * TEXTURE_WIDTH;
+		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
+			f.y = y + j * TEXTURE_WIDTH;
+			DrawFaceTextured(pd, &f, texture, cam);
+		}
+	}
+
+	// right
+	f.x = x;
+	f.depth = -TEXTURE_WIDTH;
+	f.width = 0;
+	for (int i = 0; i != cuboid->width / TEXTURE_WIDTH; ++i) {
+		f.z = z + cuboid->width - i * TEXTURE_WIDTH;
+		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
+			f.y = y + j * TEXTURE_WIDTH;
+			DrawFaceTextured(pd, &f, texture, cam);
+		}
+	}
+	
+}
+
 int GetFaceTransformed(Face* face, Camera* cam, int* x, int* width) {
 	float newFaceXMin = face->x - cam->x;
 	float newFaceZMin = face->z - cam->z;
@@ -136,7 +198,7 @@ int GetFaceTransformed(Face* face, Camera* cam, int* x, int* width) {
 	int finalFaceXMin = mat[1][0] * newFaceZMin + mat[1][1] * newFaceXMin;
 	int finalFaceXMax = mat[1][0] * newFaceZMax + mat[1][1] * newFaceXMax;
 	float newWidth = finalFaceXMax - finalFaceXMin;
-	if (newWidth < 0) return 0;
+	if (newWidth <= 0) return 0;
 
 	*x = finalFaceXMin;
 	*width = newWidth;
@@ -178,4 +240,11 @@ void DrawFaceTiledDark(PlaydateAPI* pd, Face* face, Camera* cam)
 	int x = 0, width = 0;
 	if (!GetFaceTransformed(face, cam, &x, &width)) return;
 	pd->graphics->fillRect(x, face->y - cam->y, width, face->height, (void*)kColorTiledDark);
+}
+
+void DrawFaceTextured(PlaydateAPI* pd, Face* face, Texture* t, Camera* cam)
+{
+	int x = 0, width = 0;
+	if (!GetFaceTransformed(face, cam, &x, &width)) return;
+	pd->graphics->drawBitmap(t->bmps[width - 1], x, face->y - cam->y, kBitmapUnflipped);
 }
