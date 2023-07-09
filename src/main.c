@@ -11,6 +11,7 @@
 
 #include "pd_api.h"
 #include "luaglue.h"
+#include "Renderer.h"
 
 const char* fontpath = "/System/Fonts/Asheville-Sans-14-Bold.pft";
 LCDFont* font = NULL;
@@ -22,7 +23,13 @@ int eventHandler(PlaydateAPI* pd, PDSystemEvent event, uint32_t arg)
 {
 	(void)arg; // arg is currently only used for event = kEventKeyPressed
 
-	if ( event == kEventInitLua ) RegisterLua(pd);
+	if (event == kEventInitLua) {
+		RegisterLua(pd);
+		AllocRenderBufferNodeArr(pd);
+	}
+	else if (event == kEventTerminate) {
+		FreeRenderBufferNodeArr(pd);
+	}
 
 	
 	return 0;

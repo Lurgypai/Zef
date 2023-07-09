@@ -197,6 +197,21 @@ static int fez_drawCuboidTextured(lua_State* state) {
 	return 0;
 }
 
+static int fez_bufferCuboidTextured(lua_State* state) {
+	Cuboid* cuboid = getCuboid(1);
+	Texture* texture = getTexture(2);
+	Camera* camera = getCamera(3);
+
+	BufferCuboidTextured(pd, cuboid, texture, camera);
+	return 0;
+}
+
+static int fez_drawBuffered(lua_State* state) {
+	Camera* cam = getCamera(1);
+	DrawBuffered(pd, cam);
+	return 0;
+}
+
 static int texture_gc(lua_State* state) {
 	Texture* texture = getTexture(1);
 	DeleteTexture(pd, texture);
@@ -231,6 +246,14 @@ void RegisterLua(PlaydateAPI* pd_) {
 	}
 
 	if (!pd->lua->addFunction(fez_drawCuboidTextured, "fez.drawCuboidTextured", &err)) {
+		pd->system->logToConsole("%s:%i: addFunction failed, %s", __FILE__, __LINE__, err);
+	}
+
+	if (!pd->lua->addFunction(fez_bufferCuboidTextured, "fez.bufferCuboidTextured", &err)) {
+		pd->system->logToConsole("%s:%i: addFunction failed, %s", __FILE__, __LINE__, err);
+	}
+
+	if (!pd->lua->addFunction(fez_drawBuffered, "fez.drawBuffered", &err)) {
 		pd->system->logToConsole("%s:%i: addFunction failed, %s", __FILE__, __LINE__, err);
 	}
 

@@ -7,8 +7,6 @@
 typedef struct Texture_ {
 	//all possible texture widths
 	LCDBitmap* bmps[TEXTURE_WIDTH];
-	// z for rendering at different depths
-	float z;
 } Texture;
 
 Texture* LoadTexture(PlaydateAPI* pd, const char* dir);

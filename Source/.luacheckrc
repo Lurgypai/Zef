@@ -14,7 +14,13 @@ stds.fez = {
                         "rotateAround"
                     }
                 },
-                "drawCuboid"
+                texture = {
+                    fields = {
+                        "new",
+                    }
+                },
+                "drawCuboid",
+                "drawBuffered",
             }
         }
     }

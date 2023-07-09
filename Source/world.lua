@@ -43,7 +43,7 @@ end
 table.insert(world.cuboids, fez.cuboid.new(-64, -128, -64, 128, 800, 128, 0))
 table.insert(world.cuboids, fez.cuboid.new(-288, 0, -96, 416, 32, 192, 1))
 table.insert(world.cuboids, fez.cuboid.new(160, -32, -160, 64, 32, 64, 1))
--- table.insert(world.cuboids, fez.cuboid.new(288, -64, -32, 64, 32, 64, 1))
+table.insert(world.cuboids, fez.cuboid.new(288, -64, -32, 64, 32, 64, 1))
 
 -- table.insert(world.cuboids, fez.cuboid.new(-160, -192, -224, 64, 32, 64, 1))
 -- table.insert(world.cuboids, fez.cuboid.new(-32, -320, -288, 224, 32, 64, 1))
@@ -78,6 +78,13 @@ for _, cuboid in pairs(world.cuboids) do
     }
     table.insert(world.orientations[4], faceRight)
 end
+
+function world:bufferTextured(texture, cam)
+    for _, cuboid in pairs(self.cuboids) do
+        fez.bufferCuboidTextured(cuboid, texture, cam)
+    end
+end
+
 
 function world:draw(cam)
     for _, cuboid in pairs(self.cuboids) do

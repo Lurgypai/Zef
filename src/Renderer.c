@@ -146,7 +146,7 @@ void DrawCuboidTextured(PlaydateAPI* pd, Cuboid* cuboid, Texture* texture, Camer
 	f.x = x + cuboid->width;
 	f.width = 0;
 	f.depth = TEXTURE_WIDTH;
-	for (int i = 0; i != cuboid->width / TEXTURE_WIDTH; ++i) {
+	for (int i = 0; i != cuboid->depth / TEXTURE_WIDTH; ++i) {
 		f.z = z + i * TEXTURE_WIDTH;
 		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
 			f.y = y + j * TEXTURE_WIDTH;
@@ -170,8 +170,8 @@ void DrawCuboidTextured(PlaydateAPI* pd, Cuboid* cuboid, Texture* texture, Camer
 	f.x = x;
 	f.depth = -TEXTURE_WIDTH;
 	f.width = 0;
-	for (int i = 0; i != cuboid->width / TEXTURE_WIDTH; ++i) {
-		f.z = z + cuboid->width - i * TEXTURE_WIDTH;
+	for (int i = 0; i != cuboid->depth / TEXTURE_WIDTH; ++i) {
+		f.z = z + cuboid->depth - i * TEXTURE_WIDTH;
 		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
 			f.y = y + j * TEXTURE_WIDTH;
 			DrawFaceTextured(pd, &f, texture, cam);
@@ -180,7 +180,7 @@ void DrawCuboidTextured(PlaydateAPI* pd, Cuboid* cuboid, Texture* texture, Camer
 	
 }
 
-int GetFaceTransformed(Face* face, Camera* cam, int* x, int* width) {
+int GetFaceTransformed(Face* face, Camera* cam, int* x, int* width, int* z) {
 	float newFaceXMin = face->x - cam->x;
 	float newFaceZMin = face->z - cam->z;
 
@@ -202,49 +202,199 @@ int GetFaceTransformed(Face* face, Camera* cam, int* x, int* width) {
 
 	*x = finalFaceXMin;
 	*width = newWidth;
+	if (z != NULL) *z = finalFaceZMin;
 	return 1;
 }
 
 void DrawFace(PlaydateAPI* pd, Face* face, Camera* cam) {
 	int x = 0, width = 0;
-	if (!GetFaceTransformed(face, cam, &x, &width)) return;
+	if (!GetFaceTransformed(face, cam, &x, &width, NULL)) return;
 	pd->graphics->drawRect(x, face->y - cam->y, width, face->height, kColorBlack);
 }
 
 void DrawFaceBlack(PlaydateAPI* pd, Face* face, Camera* cam) {
 	int x = 0, width = 0;
-	if (!GetFaceTransformed(face, cam, &x, &width)) return;
+	if (!GetFaceTransformed(face, cam, &x, &width, NULL)) return;
 	pd->graphics->fillRect(x, face->y - cam->y, width, face->height, kColorBlack);
 }
 
 void DrawFaceCheckered(PlaydateAPI* pd, Face* face, Camera* cam) {
 	int x = 0, width = 0;
-	if (!GetFaceTransformed(face, cam, &x, &width)) return;
+	if (!GetFaceTransformed(face, cam, &x, &width, NULL)) return;
 	pd->graphics->fillRect(x, face->y - cam->y, width, face->height, (void*)kColorChekerboard);
 }
 
 void DrawFaceTest(PlaydateAPI* pd, Face* face, Camera* cam) {
 	int x = 0, width = 0;
-	if (!GetFaceTransformed(face, cam, &x, &width)) return;
+	if (!GetFaceTransformed(face, cam, &x, &width, NULL)) return;
 	pd->graphics->fillRect(x, face->y - cam->y, width, face->height, (void*)kColorTest);
 }
 
 void DrawFaceTiled(PlaydateAPI* pd, Face* face, Camera* cam) {
 	int x = 0, width = 0;
-	if (!GetFaceTransformed(face, cam, &x, &width)) return;
+	if (!GetFaceTransformed(face, cam, &x, &width, NULL)) return;
 	pd->graphics->fillRect(x, face->y - cam->y, width, face->height, (void*)kColorTiled);
 }
 
 void DrawFaceTiledDark(PlaydateAPI* pd, Face* face, Camera* cam)
 {
 	int x = 0, width = 0;
-	if (!GetFaceTransformed(face, cam, &x, &width)) return;
+	if (!GetFaceTransformed(face, cam, &x, &width, NULL)) return;
 	pd->graphics->fillRect(x, face->y - cam->y, width, face->height, (void*)kColorTiledDark);
 }
 
 void DrawFaceTextured(PlaydateAPI* pd, Face* face, Texture* t, Camera* cam)
 {
 	int x = 0, width = 0;
-	if (!GetFaceTransformed(face, cam, &x, &width)) return;
+	if (!GetFaceTransformed(face, cam, &x, &width, NULL)) return;
 	pd->graphics->drawBitmap(t->bmps[width - 1], x, face->y - cam->y, kBitmapUnflipped);
 }
+
+void BufferCuboidTextured(PlaydateAPI* pd, Cuboid* cuboid, Texture* texture, Camera* cam)
+{
+	float x = cuboid->x;
+	float y = cuboid->y;
+	float z = cuboid->z;
+
+	Face f = {
+		.x = x,
+		.y = y,
+		.z = z,
+		.width = TEXTURE_WIDTH,
+		.height = TEXTURE_WIDTH,
+		.depth = 0,
+	};
+	for (int i = 0; i != cuboid->width / TEXTURE_WIDTH; ++i) {
+		f.x = x + i * TEXTURE_WIDTH;
+		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
+			f.y = y + j * TEXTURE_WIDTH;
+			BufferFaceTextured(pd, &f, texture, cam);
+		}
+	}
+
+	// left
+	f.x = x + cuboid->width;
+	f.width = 0;
+	f.depth = TEXTURE_WIDTH;
+	for (int i = 0; i != cuboid->depth / TEXTURE_WIDTH; ++i) {
+		f.z = z + i * TEXTURE_WIDTH;
+		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
+			f.y = y + j * TEXTURE_WIDTH;
+			BufferFaceTextured(pd, &f, texture, cam);
+		}
+	}
+
+	// back
+	f.z = z + cuboid->depth;
+	f.depth = 0;
+	f.width = -TEXTURE_WIDTH;
+	for (int i = 0; i != cuboid->width / TEXTURE_WIDTH; ++i) {
+		f.x = x + cuboid->width - i * TEXTURE_WIDTH;
+		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
+			f.y = y + j * TEXTURE_WIDTH;
+			BufferFaceTextured(pd, &f, texture, cam);
+		}
+	}
+
+	// right
+	f.x = x;
+	f.depth = -TEXTURE_WIDTH;
+	f.width = 0;
+	for (int i = 0; i != cuboid->depth / TEXTURE_WIDTH; ++i) {
+		f.z = z + cuboid->depth - i * TEXTURE_WIDTH;
+		for (int j = 0; j != cuboid->height / TEXTURE_WIDTH; ++j) {
+			f.y = y + j * TEXTURE_WIDTH;
+			BufferFaceTextured(pd, &f, texture, cam);
+		}
+	}
+}
+
+
+static RenderBufferNode* head = NULL;
+static RenderBufferNode* renderBufferNodeArr = NULL;
+static unsigned int allocRenderBufferNodePos = 0;
+
+static RenderBufferNode* AllocRenderBufferNode(PlaydateAPI* pd) {
+	if (allocRenderBufferNodePos == RENDER_NODE_COUNT) {
+		pd->system->logToConsole("Out of RenderBufferNodes!");
+		return NULL;
+	}
+
+	RenderBufferNode* node = &renderBufferNodeArr[allocRenderBufferNodePos];
+	node->i = allocRenderBufferNodePos;
+	node->next = NULL_RENDER_NODE;
+	node->texture = NULL;
+	++allocRenderBufferNodePos;
+	return node;
+}
+static RenderBufferNode* FreeRenderBufferNodes() {
+	allocRenderBufferNodePos = 0;
+}
+
+static RenderBufferNode* GetRenderBufferNode(unsigned int pos) {
+	if (pos == NULL_RENDER_NODE) return NULL;
+	return &renderBufferNodeArr[pos];
+}
+
+
+void BufferFaceTextured(PlaydateAPI* pd, Face* face, Texture* t, Camera* cam)
+{
+
+	int x = 0, width = 0, z = 0;
+	if (!GetFaceTransformed(face, cam, &x, &width, &z)) return;
+
+	RenderBufferNode* newNode = AllocRenderBufferNode(pd);
+	newNode->texture = t;
+	newNode->x = x;
+	newNode->y = face->y;
+	newNode->z = z;
+	newNode->width = width;
+
+	RenderBufferNode* currNode = NULL;
+	RenderBufferNode* nextNode = head;
+
+	// assign head
+	if (head == NULL) {
+		head = newNode;
+		return;
+	}
+
+	while (nextNode != NULL) {
+		if (newNode->z >= nextNode->z) {
+			if (currNode != NULL) currNode->next = newNode->i;
+			newNode->next = nextNode->i;
+			//replace head
+			if (nextNode == head) head = newNode;
+			return;
+		}
+
+		currNode = nextNode;
+		nextNode = GetRenderBufferNode(currNode->next);
+	}
+
+	// if we made it here we're at the end
+	currNode->next = newNode->i;
+}
+
+void DrawBuffered(PlaydateAPI* pd, Camera* cam) {
+	for (RenderBufferNode* currNode = head; currNode != NULL;) {
+		pd->graphics->drawBitmap(currNode->texture->bmps[currNode->width - 1], currNode->x, currNode->y - cam->y, kBitmapUnflipped);
+		currNode = GetRenderBufferNode(currNode->next);
+	}
+	head = NULL;
+	FreeRenderBufferNodes();
+}
+
+void AllocRenderBufferNodeArr(PlaydateAPI* pd) {
+	// initialize render buffer node arr
+	renderBufferNodeArr = pd->system->realloc(NULL, sizeof(RenderBufferNode) * RENDER_NODE_COUNT);
+}
+
+void FreeRenderBufferNodeArr(PlaydateAPI* pd) {
+	pd->system->realloc(renderBufferNodeArr, 0);
+	renderBufferNodeArr = NULL;
+}
+
+
+
+

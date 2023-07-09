@@ -18,7 +18,8 @@ local cam = fez.camera.new(0, 0, 0, 0)
 local offsetX = 0
 
 local texture = fez.texture.new("images/tiles/basic/basic")
-local textCuboid = fez.cuboid.new(-304, -96, 0, 64, 96, 32)
+-- local shadedTexture = fez.texture.new("images/tiles/basic/basic_shaded")
+--local textCuboid = fez.cuboid.new(-288, -96, 0, 32, 96, 64)
 
 function playdate.update()
     -- update player
@@ -33,8 +34,8 @@ function playdate.update()
     playdate.graphics.clear()
     --draw world
     playdate.graphics.setDrawOffset(0, 0)
-    world:draw(cam)
-    fez.drawCuboidTextured(textCuboid, texture, cam)
+    world:bufferTextured(texture, cam)
+    fez.drawBuffered(cam)
 
     --draw player
     if not player.isFrozen then
